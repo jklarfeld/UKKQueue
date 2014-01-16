@@ -1,10 +1,10 @@
 UKKQUEUE 
-–Updated for Automatic Reference Counting (ARC)
-============
+------------
+- Updated for Automatic Reference Counting (ARC)
 
-A wrapper class around the kqueue file change notification mechanism.
+- A wrapper class around the kqueue file change notification mechanism.
 
-Simply create a UKKQueue (or use the singleton), add a few paths to it and listen to the change notifications via NSWorkspace's notification center.
+- Simply create a UKKQueue (or use the singleton), add a few paths to it and listen to the change notifications via NSWorkspace's notification center.
 
 Installation
 -------------
