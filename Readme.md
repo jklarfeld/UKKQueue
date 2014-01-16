@@ -1,4 +1,5 @@
-UKKQUEUE
+UKKQUEUE 
+–Updated for Automatic Reference Counting (ARC)
 ============
 
 A wrapper class around the kqueue file change notification mechanism.
