@@ -77,8 +77,8 @@ void    UKFileSubscriptionProc(FNMessage message, OptionBits flags, void *refcon
         FNUnsubscribe( subscription );
     }
     
-    [subscriptions release];
-    [super dealloc];
+    
+    
 }
 
 
@@ -98,11 +98,11 @@ void    UKFileSubscriptionProc(FNMessage message, OptionBits flags, void *refcon
     if( !subscriptionUPP )
         subscriptionUPP = NewFNSubscriptionUPP( UKFileSubscriptionProc );
     
-    err = FNSubscribeByPath( (UInt8*) [path fileSystemRepresentation], subscriptionUPP, (void*)self,
+    err = FNSubscribeByPath( (UInt8*) [path fileSystemRepresentation], subscriptionUPP, (void*)CFBridgingRetain(self),
                                 kNilOptions, &subscription );
     if( err != noErr )
     {
-        NSLog( @"UKFNSubscribeFileWatcher addPath: %@ failed due to error ID=%ld.", path, err );
+        NSLog( @"UKFNSubscribeFileWatcher addPath: %@ failed due to error ID=%d.", path, (int)err );
         return;
     }
     
@@ -120,7 +120,7 @@ void    UKFileSubscriptionProc(FNMessage message, OptionBits flags, void *refcon
     NSValue*            subValue = nil;
     @synchronized( self )
     {
-        subValue = [[[subscriptions objectForKey: path] retain] autorelease];
+        subValue = [subscriptions objectForKey: path];
         [subscriptions removeObjectForKey: path];
     }
     
@@ -192,7 +192,7 @@ void    UKFileSubscriptionProc(FNMessage message, OptionBits flags, void *refcon
 
 void    UKFileSubscriptionProc( FNMessage message, OptionBits flags, void *refcon, FNSubscriptionRef subscription )
 {
-    UKFNSubscribeFileWatcher*   obj = (UKFNSubscribeFileWatcher*) refcon;
+    UKFNSubscribeFileWatcher*   obj = (UKFNSubscribeFileWatcher*) CFBridgingRelease(refcon);
     
     if( message == kFNDirectoryModifiedMessage )    // No others exist as of 10.4
         [obj sendDelegateMessage: message forSubscription: subscription];

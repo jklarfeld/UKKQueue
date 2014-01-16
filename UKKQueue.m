@@ -103,7 +103,7 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
 		queueFD = kqueue();
 		if( queueFD == -1 )
 		{
-			[self release];
+			
 			return nil;
 		}
 		
@@ -129,7 +129,7 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
 //		2004-11-12	UK	Created.
 // -----------------------------------------------------------------------------
 
--(oneway void) release
+/*-(oneway void) release
 {
     AT_SYNCHRONIZED(self)
     {
@@ -138,8 +138,8 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
             keepThreadRunning = NO;
     }
     
-    [super release];
-}
+    
+}*/
     
 // -----------------------------------------------------------------------------
 //	* DESTRUCTOR:
@@ -152,7 +152,7 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
 -(void) dealloc
 {
 	delegate = nil;
-	[delegateProxy release];
+	
 	
 	if( keepThreadRunning )
 		keepThreadRunning = NO;
@@ -166,12 +166,11 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
             NSLog(@"dealloc: Couldn't close file descriptor (%d)", errno);
     }
 	
-	[watchedPaths release];
+	
 	watchedPaths = nil;
-	[watchedFDs release];
+	
 	watchedFDs = nil;
 	
-	[super dealloc];
     
     //NSLog(@"kqueue released.");
 }
@@ -239,8 +238,7 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
     {
         EV_SET( &ev, fd, EVFILT_VNODE, 
 				EV_ADD | EV_ENABLE | EV_CLEAR,
-				fflags, 0, (void*)path );
-		
+				fflags, 0, (void*)CFBridgingRetain(path));
         AT_SYNCHRONIZED( self )
         {
             [watchedPaths addObject: path];
@@ -274,9 +272,9 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
     
     AT_SYNCHRONIZED( self )
     {
-        index = [watchedPaths indexOfObject: path];
+        index = (int)[watchedPaths indexOfObject: path];
         
-        if( index == NSNotFound )
+        if( index == (int)NSNotFound )
             return;
         
         fd = [[watchedFDs objectAtIndex: index] intValue];
@@ -344,8 +342,6 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
     
     while( keepThreadRunning )
     {
-		NSAutoreleasePool*  pool = [[NSAutoreleasePool alloc] init];
-		
 		NS_DURING
 			n = kevent( queueFD, NULL, 0, &ev, 1, &timeout );
 			if( n > 0 )
@@ -354,7 +350,7 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
 				{
 					if( ev.fflags )
 					{
-						NSString*		fpath = [[(NSString *)ev.udata retain] autorelease];    // In case one of the notified folks removes the path.
+						NSString*		fpath = (NSString *)CFBridgingRelease(ev.udata);    // In case one of the notified folks removes the path.
 						//NSLog(@"UKKQueue: Detected file change: %@", fpath);
 						[[NSWorkspace sharedWorkspace] noteFileSystemChanged: fpath];
 						
@@ -381,7 +377,7 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
 			NSLog(@"Error in UKKQueue watcherThread: %@",localException);
 		NS_ENDHANDLER
 		
-		[pool release];
+		
     }
     
 	// Close our kqueue's file descriptor:
@@ -441,7 +437,7 @@ static UKKQueue * gUKKQueueSharedQueueSingleton = nil;
 	id	oldProxy = delegateProxy;
 	delegate = newDelegate;
 	delegateProxy = [delegate copyMainThreadProxy];
-	[oldProxy release];
+	
 }
 
 // -----------------------------------------------------------------------------

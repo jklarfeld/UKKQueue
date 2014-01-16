@@ -57,9 +57,7 @@
 	if( ![target respondsToSelector: itemAction] )
 		[self doesNotRecognizeSelector: itemAction];
 	
-	[target retain];
 	[target performSelectorOnMainThread: itemAction withObject: nil waitUntilDone: YES];
-	[target release];
 	
 	return nil;
 }
@@ -74,11 +72,7 @@
 	if( ![target respondsToSelector: itemAction] )
 		[self doesNotRecognizeSelector: itemAction];
 	
-	[target retain];
-	[obj retain];
 	[target performSelectorOnMainThread: itemAction withObject: obj waitUntilDone: YES];
-	[obj release];
-	[target release];
 	
 	return nil;
 }
@@ -105,9 +99,7 @@
     if( [target respondsToSelector: itemAction] )
 	{
 		[invocation retainArguments];
-		[target retain];
 		[invocation performSelectorOnMainThread: @selector(invokeWithTarget:) withObject: target waitUntilDone: YES];
-		[target release];
 	}
 	else
         [self doesNotRecognizeSelector: itemAction];
@@ -125,7 +117,7 @@
 
 -(id)	copyMainThreadProxy	// Just in case someone accidentally sends this message to a main thread proxy.
 {
-	return [self retain];
+	return self;
 }
 
 @end
@@ -139,7 +131,7 @@
 
 -(id)	mainThreadProxy
 {
-	return [[[UKMainThreadProxy alloc] initWithTarget: self] autorelease];
+	return [[UKMainThreadProxy alloc] initWithTarget: self];
 }
 
 -(id)	copyMainThreadProxy
